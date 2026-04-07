@@ -65,7 +65,7 @@ TEST_CASE("DynamicTable", "[table]")
 
     // Set row IDs
     std::vector<int> ids = {1, 2, 3};
-    SizeArray idShape = {ids.size()};
+    SizeArray idShape = {0};
     SizeArray idChunking = {ids.size()};
     IO::ArrayDataSetConfig idConfig(BaseDataType::I32, idShape, idChunking);
     auto elementIDs = NWB::ElementIdentifiers::create(tablePath + "/id", io);

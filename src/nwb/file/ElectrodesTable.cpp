@@ -47,7 +47,7 @@ Status ElectrodesTable::initialize(const std::string& description)
   //                           0);  // 0 indicates variable length
 
   IO::ArrayDataSetConfig electrodeConfig(
-      IO::BaseDataType::I32, SizeArray {1}, SizeArray {1});
+      IO::BaseDataType::I32, SizeArray {0}, SizeArray {1});
   Status electrodeStatus = m_rowElementIdentifiers->initialize(electrodeConfig);
 
   IO::ArrayDataSetConfig groupNameConfig(
