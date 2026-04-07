@@ -213,14 +213,20 @@ static inline bool isISO8601Date(const std::string& dateStr)
  * @brief Factory method to create an IO object of the specified type.
  * @param type The type of IO object to create (e.g., "HDF5").
  * @param filename The filename to use for the IO object.
+ * @param disableSWMRMode If true, disable Single Writer Multiple Reader mode.
+ *                        This allows new objects (Groups/Datasets) to be
+ * created after recording has started, at the cost of the file not being
+ * guaranteed readable during recording.
  * @return A shared pointer to a BaseIO object.
  * @throws std::invalid_argument if the type is invalid.
  */
-static inline std::shared_ptr<IO::BaseIO> createIO(const std::string& type,
-                                                   const std::string& filename)
+static inline std::shared_ptr<IO::BaseIO> createIO(
+    const std::string& type,
+    const std::string& filename,
+    const bool disableSWMRMode = false)
 {
   if (type == "HDF5") {
-    return std::make_shared<AQNWB::IO::HDF5::HDF5IO>(filename);
+    return std::make_shared<AQNWB::IO::HDF5::HDF5IO>(filename, disableSWMRMode);
   } else {
     throw std::invalid_argument("Invalid IO type");
   }
