@@ -1026,6 +1026,60 @@ Status HDF5IO::createReferenceDataSet(
   return intToStatus(writeStatus);
 }
 
+Status HDF5IO::appendReferenceDataSet(
+    const std::string& path, const std::vector<std::string>& references)
+{
+  const hsize_t appendSize = references.size();
+  if (appendSize == 0) {
+    return Status::Success;
+  }
+
+  // Open the existing dataset
+  const hid_t dset = H5Dopen(m_file->getLocId(), path.c_str(), H5P_DEFAULT);
+  if (dset < 0) {
+    return Status::Failure;
+  }
+
+  // Get current size
+  hid_t fileSpace = H5Dget_space(dset);
+  hsize_t currentSize = 0;
+  H5Sget_simple_extent_dims(fileSpace, &currentSize, NULL);
+  H5Sclose(fileSpace);
+
+  // Extend the dataset
+  const hsize_t newSize = currentSize + appendSize;
+  herr_t extendStatus = H5Dset_extent(dset, &newSize);
+  if (extendStatus < 0) {
+    H5Dclose(dset);
+    return Status::Failure;
+  }
+
+  // Create references
+  const auto rdata = new hobj_ref_t[appendSize * sizeof(hobj_ref_t)];
+  for (SizeType i = 0; i < appendSize; i++) {
+    m_file->reference(&rdata[i], references[i].c_str());
+  }
+
+  // Select the appended region in the file
+  fileSpace = H5Dget_space(dset);
+  const hsize_t offset = currentSize;
+  H5Sselect_hyperslab(
+      fileSpace, H5S_SELECT_SET, &offset, NULL, &appendSize, NULL);
+
+  // Create memory dataspace
+  const hid_t memSpace = H5Screate_simple(1, &appendSize, NULL);
+
+  const herr_t writeStatus =
+      H5Dwrite(dset, H5T_STD_REF_OBJ, memSpace, fileSpace, H5P_DEFAULT, rdata);
+
+  delete[] rdata;
+  H5Sclose(memSpace);
+  H5Sclose(fileSpace);
+  H5Dclose(dset);
+
+  return intToStatus(writeStatus);
+}
+
 Status HDF5IO::createStringDataSet(const std::string& path,
                                    const std::string& value)
 {

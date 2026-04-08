@@ -775,6 +775,16 @@ public:
       const std::string& path, const std::vector<std::string>& references) = 0;
 
   /**
+   * @brief Appends references to an existing extensible reference dataset in
+   * the file.
+   * @param path The location of the existing dataset.
+   * @param references The array of references to append.
+   * @return The status of the append operation.
+   */
+  virtual Status appendReferenceDataSet(
+      const std::string& path, const std::vector<std::string>& references) = 0;
+
+  /**
    * @brief Starts the recording process.
    * @return The status of the operation.
    */
