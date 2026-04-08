@@ -74,10 +74,11 @@ Status DynamicTable::addColumn(const std::shared_ptr<VectorData>& vectorData,
               << vectorData->getPath() << std::endl;
     return Status::Failure;
   } else {
-    // Write all strings in a single block
-    auto dataset = vectorData->recordData();
-    Status writeStatus = dataset->writeDataBlock(SizeArray {values.size()},
-                                                 SizeArray {0},
+    // Write at the current end of the dataset so successive calls append.
+    const auto dataset = vectorData->recordData();
+    const SizeArray appendOffset = {dataset->getShape()[0]};
+    const Status writeStatus = dataset->writeDataBlock(SizeArray {values.size()},
+                                                 appendOffset,
                                                  IO::BaseDataType::V_STR,
                                                  values);
     addColumnName(vectorData->getName());
@@ -101,8 +102,13 @@ Status DynamicTable::setRowIDs(
       return Status::Failure;
     }
 
-    Status writeDataStatus = elementIDs->recordData()->writeDataBlock(
-        SizeArray(1, values.size()), IO::BaseDataType::I32, &values[0]);
+    const auto idDataset = elementIDs->recordData();
+    const SizeArray appendOffset = {idDataset->getShape()[0]};
+    const Status writeDataStatus =
+        idDataset->writeDataBlock(SizeArray(1, values.size()),
+                                  appendOffset,
+                                  IO::BaseDataType::I32,
+                                  &values[0]);
     Status createAttrsStatus =
         ioPtr->createCommonNWBAttributes(AQNWB::mergePaths(m_path, "id"),
                                          elementIDs->getNamespace(),
