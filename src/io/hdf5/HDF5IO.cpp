@@ -994,14 +994,20 @@ Status HDF5IO::createReferenceDataSet(
     m_file->reference(&rdata[i], references[i].c_str());
   }
 
-  hid_t space = H5Screate_simple(1, &size, NULL);
+  // Use extensible (chunked) storage so the dataset can be appended to later
+  hsize_t maxdims = H5S_UNLIMITED;
+  hid_t space = H5Screate_simple(1, &size, &maxdims);
+
+  hid_t dcpl = H5Pcreate(H5P_DATASET_CREATE);
+  hsize_t chunk = std::max(size, static_cast<hsize_t>(1));
+  H5Pset_chunk(dcpl, 1, &chunk);
 
   hid_t dset = H5Dcreate(m_file->getLocId(),
                          path.c_str(),
                          H5T_STD_REF_OBJ,
                          space,
                          H5P_DEFAULT,
-                         H5P_DEFAULT,
+                         dcpl,
                          H5P_DEFAULT);
 
   herr_t writeStatus = H5Dwrite(dset,
@@ -1012,6 +1018,8 @@ Status HDF5IO::createReferenceDataSet(
                                 static_cast<const void*>(rdata));
 
   delete[] rdata;
+
+  H5Pclose(dcpl);
 
   herr_t dsetStatus = H5Dclose(dset);
   if (intToStatus(dsetStatus) == Status::Failure) {
