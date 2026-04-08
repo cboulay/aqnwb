@@ -115,33 +115,42 @@ Status DynamicTable::addReferenceColumn(const std::string& name,
                                         const std::string& colDescription,
                                         const std::vector<std::string>& dataset)
 {
-  // TODO: Similar to addColumn() we should check if the column already exists
-  // and if so append to it rather than creating a new column. This currently
-  // prevents append to work for ElectrodesTable.
   if (dataset.empty()) {
     std::cerr << "Data to add to column is empty" << std::endl;
     return Status::Failure;
-  } else {
-    auto ioPtr = getIO();
-    if (!ioPtr) {
-      std::cerr
-          << "DynamicTable::addReferenceColumn IO object has been deleted."
-          << std::endl;
-      return Status::Failure;
-    }
+  }
 
-    std::string columnPath = AQNWB::mergePaths(m_path, name);
+  auto ioPtr = getIO();
+  if (!ioPtr) {
+    std::cerr << "DynamicTable::addReferenceColumn IO object has been deleted."
+              << std::endl;
+    return Status::Failure;
+  }
 
-    auto refColumn = AQNWB::NWB::VectorData::createReferenceVectorData(
-        columnPath, ioPtr, colDescription, dataset);
-    if (refColumn == nullptr) {
-      std::cerr << "Failed to create reference column" << std::endl;
+  std::string columnPath = AQNWB::mergePaths(m_path, name);
+
+  if (ioPtr->objectExists(columnPath)) {
+    // Column already exists — append the new references
+    Status appendStatus = ioPtr->appendReferenceDataSet(columnPath, dataset);
+    if (appendStatus != Status::Success) {
+      std::cerr << "Failed to append to reference column " << columnPath
+                << std::endl;
       return Status::Failure;
     }
     addColumnName(name);
-    m_recordingColumns->addRecordingObject(refColumn);
     return Status::Success;
   }
+
+  // Column does not exist — create it
+  auto refColumn = AQNWB::NWB::VectorData::createReferenceVectorData(
+      columnPath, ioPtr, colDescription, dataset);
+  if (refColumn == nullptr) {
+    std::cerr << "Failed to create reference column" << std::endl;
+    return Status::Failure;
+  }
+  addColumnName(name);
+  m_recordingColumns->addRecordingObject(refColumn);
+  return Status::Success;
 }
 
 Status DynamicTable::finalize()
