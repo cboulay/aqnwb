@@ -77,10 +77,11 @@ Status DynamicTable::addColumn(const std::shared_ptr<VectorData>& vectorData,
     // Write at the current end of the dataset so successive calls append.
     const auto dataset = vectorData->recordData();
     const SizeArray appendOffset = {dataset->getShape()[0]};
-    const Status writeStatus = dataset->writeDataBlock(SizeArray {values.size()},
-                                                 appendOffset,
-                                                 IO::BaseDataType::V_STR,
-                                                 values);
+    const Status writeStatus =
+        dataset->writeDataBlock(SizeArray {values.size()},
+                                appendOffset,
+                                IO::BaseDataType::V_STR,
+                                values);
     addColumnName(vectorData->getName());
     m_recordingColumns->addRecordingObject(vectorData);
     return writeStatus;
