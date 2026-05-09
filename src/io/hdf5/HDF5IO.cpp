@@ -1126,7 +1126,7 @@ Status HDF5IO::createStringDataSet(const std::string& path,
   }
 
   dataset->writeDataBlock(
-      SizeArray {1}, SizeArray {0}, IO::BaseDataType::V_STR, values);
+      SizeArray {values.size()}, SizeArray {0}, IO::BaseDataType::V_STR, values);
 
   return Status::Success;
 }
