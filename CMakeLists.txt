@@ -36,6 +36,7 @@ add_library(
     src/nwb/behavior/SpatialSeries.cpp
     src/nwb/device/Device.cpp
     src/nwb/ecephys/ElectricalSeries.cpp
+    src/nwb/ecephys/FeatureExtraction.cpp
     src/nwb/ecephys/SpikeEventSeries.cpp
     src/nwb/file/ElectrodeGroup.cpp
     src/nwb/file/ElectrodesTable.cpp
