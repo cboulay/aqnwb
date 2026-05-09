@@ -33,6 +33,7 @@ add_library(
     src/nwb/base/NWBContainer.cpp
     src/nwb/base/ProcessingModule.cpp
     src/nwb/base/TimeSeries.cpp
+    src/nwb/behavior/SpatialSeries.cpp
     src/nwb/device/Device.cpp
     src/nwb/ecephys/ElectricalSeries.cpp
     src/nwb/ecephys/SpikeEventSeries.cpp
